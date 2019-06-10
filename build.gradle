@@ -1,0 +1,39 @@
+buildscript {
+    ext {
+        jmeterVersion = '5.1.1'
+        kafkaVersion = '2.1.1'
+    }
+}
+
+plugins {
+    id 'java-library'
+    id "com.github.johnrengelman.shadow" version "5.0.0"
+}
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+version = '0.0.1'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly "org.apache.jmeter:ApacheJMeter_core:${jmeterVersion}"
+    compileOnly "org.apache.jmeter:ApacheJMeter_java:${jmeterVersion}"
+    compileOnly "org.apache.jmeter:ApacheJMeter_http:${jmeterVersion}"
+    compileOnly "org.apache.jmeter:ApacheJMeter_ftp:${jmeterVersion}"
+    implementation "org.apache.kafka:kafka-clients:${kafkaVersion}"
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.4+'
+
+}
+
+tasks.build.dependsOn tasks.shadowJar
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
