@@ -21,8 +21,6 @@ repositories {
 dependencies {
     compileOnly "org.apache.jmeter:ApacheJMeter_core:${jmeterVersion}"
     compileOnly "org.apache.jmeter:ApacheJMeter_java:${jmeterVersion}"
-    compileOnly "org.apache.jmeter:ApacheJMeter_http:${jmeterVersion}"
-    compileOnly "org.apache.jmeter:ApacheJMeter_ftp:${jmeterVersion}"
     implementation "org.apache.kafka:kafka-clients:${kafkaVersion}"
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.4+'
