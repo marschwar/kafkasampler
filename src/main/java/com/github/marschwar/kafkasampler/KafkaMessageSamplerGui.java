@@ -4,6 +4,8 @@ import org.apache.jmeter.gui.util.HorizontalPanel;
 import org.apache.jmeter.gui.util.VerticalPanel;
 import org.apache.jmeter.samplers.gui.AbstractSamplerGui;
 import org.apache.jmeter.testelement.TestElement;
+import org.apache.jorphan.gui.JLabeledTextArea;
+import org.apache.jorphan.gui.JLabeledTextField;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -13,8 +15,8 @@ import java.util.List;
 
 public class KafkaMessageSamplerGui extends AbstractSamplerGui {
 
-    private JTextField tfKey;
-    private JTextArea taPayload;
+    private JLabeledTextField tfKey;
+    private JLabeledTextArea taPayload;
     private HeaderTableModel headerTableModel;
 
     public KafkaMessageSamplerGui() {
@@ -75,12 +77,10 @@ public class KafkaMessageSamplerGui extends AbstractSamplerGui {
         northPanel.add(makeTitlePanel());
         northPanel.add(basicOptionsPanel);
 
-        taPayload = new JTextArea(20, 40);
-        JScrollPane payloadScrollpane = new JScrollPane(taPayload);
-        payloadScrollpane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Message Payload"));
+        taPayload = new JLabeledTextArea("Message Payload");
 
         add(northPanel, BorderLayout.NORTH);
-        add(payloadScrollpane, BorderLayout.CENTER);
+        add(taPayload, BorderLayout.CENTER);
         add(createHeaderPanel(), BorderLayout.SOUTH);
     }
 
@@ -89,10 +89,7 @@ public class KafkaMessageSamplerGui extends AbstractSamplerGui {
 
         JPanel row1 = new HorizontalPanel();
         panel.add(row1);
-        tfKey = new JTextField(10);
-        JLabel lbKey = new JLabel("Message Key");
-        lbKey.setLabelFor(tfKey);
-        row1.add(lbKey);
+        tfKey = new JLabeledTextField("Message Key:", 10);
         row1.add(tfKey);
 
         return panel;
@@ -101,8 +98,8 @@ public class KafkaMessageSamplerGui extends AbstractSamplerGui {
     private JPanel createHeaderPanel() {
         VerticalPanel panel = new VerticalPanel();
 
-        JTable tblHeader = new JTable(2, 2);
         headerTableModel = new HeaderTableModel();
+        JTable tblHeader = new JTable(2, 2);
         tblHeader.setModel(headerTableModel);
         JScrollPane headerScrollPane = new JScrollPane(tblHeader);
         headerScrollPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Message Headers"));
@@ -115,11 +112,11 @@ public class KafkaMessageSamplerGui extends AbstractSamplerGui {
 
         private List<Header> data = Collections.emptyList();
 
-        public List<Header> getData() {
+        List<Header> getData() {
             return data;
         }
 
-        public void setData(List<Header> data) {
+        void setData(List<Header> data) {
             this.data = data;
             fireTableDataChanged();
         }

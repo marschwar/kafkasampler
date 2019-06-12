@@ -7,6 +7,7 @@ import org.apache.jmeter.gui.util.HorizontalPanel;
 import org.apache.jmeter.gui.util.VerticalPanel;
 import org.apache.jmeter.testelement.AbstractTestElement;
 import org.apache.jmeter.testelement.TestElement;
+import org.apache.jorphan.gui.JLabeledTextField;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.common.config.SaslConfigs;
 
@@ -17,17 +18,17 @@ import static com.github.marschwar.kafkasampler.KafkaClientConfig.*;
 
 public class KafkaClientConfigGui extends AbstractConfigGui {
 
-    private JTextField tfBootstrapServers;
-    private JTextField tfSecurityProtocol;
+    private JLabeledTextField tfBootstrapServers;
+    private JLabeledTextField tfSecurityProtocol;
     private JCheckBox cbSsl;
-    private JTextField tfSslEndpointIdentification;
-    private JTextField tfKeystoreType;
-    private JTextField tfKeystoreLocation;
-    private JTextField tfKeystorePassword;
-    private JTextField tfTruststoreLocation;
-    private JTextField tfTruststorePassword;
-    private JTextField tfSaslMechanism;
-    private JTextField tfSaslJaasConfig;
+    private JLabeledTextField tfSslEndpointIdentification;
+    private JLabeledTextField tfKeystoreType;
+    private JLabeledTextField tfKeystoreLocation;
+    private JLabeledTextField tfKeystorePassword;
+    private JLabeledTextField tfTruststoreLocation;
+    private JLabeledTextField tfTruststorePassword;
+    private JLabeledTextField tfSaslMechanism;
+    private JLabeledTextField tfSaslJaasConfig;
 
     public KafkaClientConfigGui() {
         init();
@@ -139,18 +140,12 @@ public class KafkaClientConfigGui extends AbstractConfigGui {
 
         JPanel row1 = new HorizontalPanel();
         panel.add(row1);
-        tfBootstrapServers = new JTextField(10);
-        JLabel lbBootstrapServers = new JLabel("Bootstrap Servers");
-        lbBootstrapServers.setLabelFor(tfBootstrapServers);
-        row1.add(lbBootstrapServers);
+        tfBootstrapServers = new JLabeledTextField("Bootstrap Servers:", 10);
         row1.add(tfBootstrapServers);
 
         JPanel row2 = new HorizontalPanel();
         panel.add(row2);
-        tfSecurityProtocol = new JTextField(5);
-        JLabel lbSecurityProtocol = new JLabel("Security Protocol");
-        lbBootstrapServers.setLabelFor(tfBootstrapServers);
-        row2.add(lbSecurityProtocol);
+        tfSecurityProtocol = new JLabeledTextField("Security Protocol:", 5);
         row2.add(tfSecurityProtocol);
 
         return panel;
@@ -165,41 +160,23 @@ public class KafkaClientConfigGui extends AbstractConfigGui {
         JPanel keystorePanel = new HorizontalPanel();
         keystorePanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Keystore"));
         panel.add(keystorePanel);
-        tfKeystoreType = new JTextField(10);
-        JLabel lbKeystoreType = new JLabel("Type");
-        lbKeystoreType.setLabelFor(tfKeystoreType);
-        keystorePanel.add(lbKeystoreType);
+        tfKeystoreType = new JLabeledTextField("Type:", 10);
         keystorePanel.add(tfKeystoreType);
-        tfKeystoreLocation = new JTextField(10);
-        JLabel lbKeystoreLocation = new JLabel("Location");
-        lbKeystoreLocation.setLabelFor(tfKeystoreLocation);
-        keystorePanel.add(lbKeystoreLocation);
+        tfKeystoreLocation = new JLabeledTextField("Location:", 10);
         keystorePanel.add(tfKeystoreLocation);
-        tfKeystorePassword = new JTextField(5);
-        JLabel lbKeystorePassword = new JLabel("Password");
-        lbKeystoreLocation.setLabelFor(tfKeystorePassword);
-        keystorePanel.add(lbKeystorePassword);
+        tfKeystorePassword = new JLabeledTextField("Password:", 5);
         keystorePanel.add(tfKeystorePassword);
 
         JPanel row2 = new HorizontalPanel();
         panel.add(row2);
-        tfTruststoreLocation = new JTextField(10);
-        JLabel lbTruststoreLocation = new JLabel("Truststore Location");
-        lbTruststoreLocation.setLabelFor(tfTruststoreLocation);
-        row2.add(lbTruststoreLocation);
+        tfTruststoreLocation = new JLabeledTextField("Truststore Location:", 10);
         row2.add(tfTruststoreLocation);
-        tfTruststorePassword = new JTextField(5);
-        JLabel lbTruststorePassword = new JLabel("Truststore Password");
-        lbTruststoreLocation.setLabelFor(tfTruststorePassword);
-        row2.add(lbTruststorePassword);
+        tfTruststorePassword = new JLabeledTextField("Truststore Password:", 5);
         row2.add(tfTruststorePassword);
 
         JPanel row3 = new HorizontalPanel();
         panel.add(row3);
-        tfSslEndpointIdentification = new JTextField(5);
-        JLabel lbSslEndpointIdentification = new JLabel("Endpoint Identification");
-        lbSslEndpointIdentification.setLabelFor(tfSslEndpointIdentification);
-        row3.add(lbSslEndpointIdentification);
+        tfSslEndpointIdentification = new JLabeledTextField("Endpoint Identification:", 5);
         row3.add(tfSslEndpointIdentification);
 
         cbSsl.addChangeListener((changeEvent) -> {
@@ -220,18 +197,12 @@ public class KafkaClientConfigGui extends AbstractConfigGui {
 
         JPanel row1 = new HorizontalPanel();
         panel.add(row1);
-        tfSaslMechanism = new JTextField(10);
-        JLabel lbSaslMechanism = new JLabel("Mechanism");
-        lbSaslMechanism.setLabelFor(tfSaslMechanism);
-        row1.add(lbSaslMechanism);
+        tfSaslMechanism = new JLabeledTextField("Mechanism:", 10);
         row1.add(tfSaslMechanism);
 
         JPanel row2 = new HorizontalPanel();
         panel.add(row2);
-        tfSaslJaasConfig = new JTextField(10);
-        JLabel lbSaslJaasConfig = new JLabel("JAAS Config");
-        lbSaslJaasConfig.setLabelFor(tfSaslJaasConfig);
-        row2.add(lbSaslJaasConfig);
+        tfSaslJaasConfig = new JLabeledTextField("JAAS Config:", 10);
         row2.add(tfSaslJaasConfig);
 
         return panel;
