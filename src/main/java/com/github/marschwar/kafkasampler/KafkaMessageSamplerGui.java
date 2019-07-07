@@ -1,6 +1,5 @@
 package com.github.marschwar.kafkasampler;
 
-import org.apache.jmeter.gui.util.HorizontalPanel;
 import org.apache.jmeter.gui.util.VerticalPanel;
 import org.apache.jmeter.samplers.gui.AbstractSamplerGui;
 import org.apache.jmeter.testelement.TestElement;
@@ -15,6 +14,7 @@ import java.util.List;
 
 public class KafkaMessageSamplerGui extends AbstractSamplerGui {
 
+    private JLabeledTextField tfTopic;
     private JLabeledTextField tfKey;
     private JLabeledTextArea taPayload;
     private HeaderTableModel headerTableModel;
@@ -45,6 +45,7 @@ public class KafkaMessageSamplerGui extends AbstractSamplerGui {
         final KafkaMessageSampler sampler = (KafkaMessageSampler) element;
         super.configureTestElement(sampler);
 
+        sampler.setTopic(tfTopic.getText());
         sampler.setKey(tfKey.getText());
         sampler.setPayload(taPayload.getText());
         sampler.setHeaders(headerTableModel.getData());
@@ -55,6 +56,7 @@ public class KafkaMessageSamplerGui extends AbstractSamplerGui {
         final KafkaMessageSampler sampler = (KafkaMessageSampler) element;
         super.configure(element);
 
+        tfTopic.setText(sampler.getTopic());
         tfKey.setText(sampler.getKey());
         taPayload.setText(sampler.getPayload());
         headerTableModel.setData(sampler.getHeaders());
@@ -62,6 +64,7 @@ public class KafkaMessageSamplerGui extends AbstractSamplerGui {
 
     @Override
     public void clearGui() {
+        tfTopic.setText("");
         tfKey.setText("");
         taPayload.setText("");
         super.clearGui();
@@ -87,10 +90,10 @@ public class KafkaMessageSamplerGui extends AbstractSamplerGui {
     private JPanel createDataPanel() {
         VerticalPanel panel = new VerticalPanel();
 
-        JPanel row1 = new HorizontalPanel();
-        panel.add(row1);
+        tfTopic = new JLabeledTextField("Topic:", 20);
+        panel.add(tfTopic);
         tfKey = new JLabeledTextField("Message Key:", 10);
-        row1.add(tfKey);
+        panel.add(tfKey);
 
         return panel;
     }

@@ -6,12 +6,14 @@ import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.Interruptible;
 import org.apache.jmeter.samplers.SampleResult;
 import org.apache.jmeter.testelement.TestElement;
+import org.apache.jmeter.testelement.TestStateListener;
 import org.apache.jmeter.testelement.property.CollectionProperty;
 import org.apache.jmeter.testelement.property.PropertyIterator;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.config.SslConfigs;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
@@ -24,7 +26,7 @@ import java.util.stream.Collectors;
 
 import static com.github.marschwar.kafkasampler.KafkaClientConfig.*;
 
-public class KafkaMessageSampler extends AbstractSampler implements Interruptible {
+public class KafkaMessageSampler extends AbstractSampler implements Interruptible, TestStateListener {
     private static final Logger log = LoggerFactory.getLogger(KafkaMessageSampler.class);
 
     private static final Set<String> APPLIABLE_CONFIG_CLASSES = new HashSet<>(
@@ -34,6 +36,10 @@ public class KafkaMessageSampler extends AbstractSampler implements Interruptibl
         )
     );
 
+    private static final String KEY_TOPIC = "topic";
+    private static final String KEY_MESSAGE_KEY = "key";
+    private static final String KEY_MESSAGE_PAYLOAD = "payload";
+
     private Producer producer;
 
     public KafkaMessageSampler() {
@@ -42,15 +48,31 @@ public class KafkaMessageSampler extends AbstractSampler implements Interruptibl
 
     @Override
     public boolean interrupt() {
-        if (producer != null) {
-            producer.close();
+        final Producer p = producer;
+        if (p != null) {
+            p.close();
             return true;
         }
         return false;
     }
 
+    private synchronized Producer getProducer() {
+        if (producer == null) {
+            producer = createProducer();
+        }
+        return producer;
+    }
+
+
     @Override
     public SampleResult sample(Entry e) {
+        getProducer().send(new ProducerRecord("foo", KEY_MESSAGE_KEY, "value".getBytes()), (metadata, exception) -> {
+            if (exception != null) {
+                log.error("Error sending message", exception);
+            } else {
+                log.info("Message sent to {}", metadata.topic());
+            }
+        });
         SampleResult res = new SampleResult();
         res.setSampleLabel("Kafka Message");
         res.setRequestHeaders(getHeadersAsDisplayString());
@@ -101,26 +123,32 @@ public class KafkaMessageSampler extends AbstractSampler implements Interruptibl
 
     @Override
     public boolean applies(ConfigTestElement configElement) {
-
-        log.warn("Check applicablae " + configElement);
         final String guiClass = configElement.getProperty(TestElement.GUI_CLASS).getStringValue();
         return APPLIABLE_CONFIG_CLASSES.contains(guiClass);
     }
 
+    public String getTopic() {
+        return getPropertyAsString(KEY_TOPIC);
+    }
+
     public String getKey() {
-        return getPropertyAsString("key");
+        return getPropertyAsString(KEY_MESSAGE_KEY);
+    }
+
+    public void setTopic(String topic) {
+        setProperty(KEY_TOPIC, topic);
     }
 
     public void setKey(String key) {
-        setProperty("key", key);
+        setProperty(KEY_MESSAGE_KEY, key);
     }
 
     public String getPayload() {
-        return getPropertyAsString("payload");
+        return getPropertyAsString(KEY_MESSAGE_PAYLOAD);
     }
 
     public void setPayload(String key) {
-        setProperty("payload", key);
+        setProperty(KEY_MESSAGE_PAYLOAD, key);
     }
 
     public List<Header> getHeaders() {
@@ -143,5 +171,28 @@ public class KafkaMessageSampler extends AbstractSampler implements Interruptibl
 
     private String getHeadersAsDisplayString() {
         return getHeaders().stream().map(h -> h.key + " = " + h.value).collect(Collectors.joining("\n"));
+    }
+
+    @Override
+    public void testStarted() {
+        // NOOP
+    }
+
+    @Override
+    public void testStarted(String host) {
+        // NOOP
+    }
+
+    @Override
+    public void testEnded() {
+        testEnded("");
+    }
+
+    @Override
+    public void testEnded(String host) {
+        final Producer p = producer;
+        if (p != null) {
+            p.close();
+        }
     }
 }
