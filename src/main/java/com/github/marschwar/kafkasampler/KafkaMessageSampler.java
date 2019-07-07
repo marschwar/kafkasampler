@@ -134,7 +134,7 @@ public class KafkaMessageSampler extends AbstractSampler implements Interruptibl
     }
 
     public void setHeaders(List<Header> headers) {
-        getHeadersProp().setCollection(headers);
+        getHeadersProp().setCollection(headers == null ? new ArrayList<>() : headers);
     }
 
     private CollectionProperty getHeadersProp() {
