@@ -1,12 +1,11 @@
 package com.github.marschwar.kafkasampler;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jmeter.config.ConfigTestElement;
 import org.apache.jmeter.samplers.AbstractSampler;
 import org.apache.jmeter.samplers.Entry;
-import org.apache.jmeter.samplers.Interruptible;
 import org.apache.jmeter.samplers.SampleResult;
 import org.apache.jmeter.testelement.TestElement;
-import org.apache.jmeter.testelement.TestStateListener;
 import org.apache.jmeter.testelement.property.CollectionProperty;
 import org.apache.jmeter.testelement.property.PropertyIterator;
 import org.apache.kafka.clients.CommonClientConfigs;
@@ -21,12 +20,14 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.Charset;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.github.marschwar.kafkasampler.KafkaClientConfig.*;
 
-public class KafkaMessageSampler extends AbstractSampler implements Interruptible, TestStateListener {
+public class KafkaMessageSampler extends AbstractSampler {
     private static final Logger log = LoggerFactory.getLogger(KafkaMessageSampler.class);
 
     private static final Set<String> APPLIABLE_CONFIG_CLASSES = new HashSet<>(
@@ -40,52 +41,54 @@ public class KafkaMessageSampler extends AbstractSampler implements Interruptibl
     private static final String KEY_MESSAGE_KEY = "key";
     private static final String KEY_MESSAGE_PAYLOAD = "payload";
 
-    private Producer producer;
-
     public KafkaMessageSampler() {
         setProperty(new CollectionProperty("_headers", new ArrayList<>()));
     }
 
     @Override
-    public boolean interrupt() {
-        final Producer p = producer;
-        if (p != null) {
-            p.close();
-            return true;
+    public SampleResult sample(Entry entry) {
+
+        final String topic = getTopic();
+        if (StringUtils.isBlank(topic)) {
+            throw new IllegalArgumentException("topic must be set.");
         }
-        return false;
-    }
+        final Charset UTF8 = Charset.forName("UTF-8");
+        ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, getKey(), getPayload().getBytes(UTF8));
+        getHeaders().forEach(header -> record.headers().add(header.key, header.value.getBytes(UTF8)));
 
-    private synchronized Producer getProducer() {
-        if (producer == null) {
-            producer = createProducer();
-        }
-        return producer;
-    }
-
-
-    @Override
-    public SampleResult sample(Entry e) {
-        getProducer().send(new ProducerRecord("foo", KEY_MESSAGE_KEY, "value".getBytes()), (metadata, exception) -> {
-            if (exception != null) {
-                log.error("Error sending message", exception);
-            } else {
-                log.info("Message sent to {}", metadata.topic());
-            }
-        });
-        SampleResult res = new SampleResult();
+        final SampleResult res = new SampleResult();
         res.setSampleLabel("Kafka Message");
         res.setRequestHeaders(getHeadersAsDisplayString());
         res.setSamplerData(getPayload());
-        res.setResponseCode("212");
-        res.setSuccessful(true);
-        res.sampleStart();
-        res.sampleEnd();
+        res.setDataEncoding(UTF8.displayName());
 
+        try (Producer<String, byte[]> producer = createProducer()) {
+            res.sampleStart();
+            producer.send(record, (metadata, exception) -> {
+                res.sampleEnd();
+                if (exception != null) {
+                    log.error("Error sending message", exception);
+                    res.setSuccessful(false);
+                    res.setResponseMessage(exception.getMessage());
+                } else {
+                    res.setSuccessful(true);
+                    res.setResponseHeaders(
+                        "Topic: " + metadata.topic() +
+                            "\nPartition: " + metadata.partition() +
+                            "\nOffset: " + metadata.offset() +
+                            "\nTimestamp: " + metadata.timestamp()
+                    );
+                }
+            }).get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("Error sending message", e);
+            res.setSuccessful(false);
+            res.setResponseMessage(e.getMessage());
+        }
         return res;
     }
 
-    private Producer createProducer() {
+    private Producer<String, byte[]> createProducer() {
         Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, getPropertyAsString(BOOTSTRAP_SERVERS));
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
@@ -114,7 +117,7 @@ public class KafkaMessageSampler extends AbstractSampler implements Interruptibl
         props.put(SaslConfigs.SASL_JAAS_CONFIG, getPropertyAsString(SASL_JAAS_CONFIG));
         props.put(SaslConfigs.SASL_MECHANISM, getPropertyAsString(SASL_MECHANISM));
 
-        return new KafkaProducer(props);
+        return new KafkaProducer<>(props);
     }
 
     private String getSecurityProtocol() {
@@ -170,29 +173,6 @@ public class KafkaMessageSampler extends AbstractSampler implements Interruptibl
     }
 
     private String getHeadersAsDisplayString() {
-        return getHeaders().stream().map(h -> h.key + " = " + h.value).collect(Collectors.joining("\n"));
-    }
-
-    @Override
-    public void testStarted() {
-        // NOOP
-    }
-
-    @Override
-    public void testStarted(String host) {
-        // NOOP
-    }
-
-    @Override
-    public void testEnded() {
-        testEnded("");
-    }
-
-    @Override
-    public void testEnded(String host) {
-        final Producer p = producer;
-        if (p != null) {
-            p.close();
-        }
+        return getHeaders().stream().map(h -> h.key + ": " + h.value).collect(Collectors.joining("\n"));
     }
 }

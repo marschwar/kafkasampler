@@ -20,12 +20,13 @@ repositories {
 
 dependencies {
     compileOnly "org.apache.jmeter:ApacheJMeter_core:${jmeterVersion}"
-    compileOnly "org.apache.jmeter:ApacheJMeter_java:${jmeterVersion}"
+    compileOnly "org.apache.jmeter:ApacheJMeter_http:${jmeterVersion}"
     implementation "org.apache.kafka:kafka-clients:${kafkaVersion}"
 
     testCompileOnly "org.apache.jmeter:ApacheJMeter_core:${jmeterVersion}"
     testCompileOnly "org.apache.jmeter:ApacheJMeter_java:${jmeterVersion}"
     testImplementation 'org.junit.jupiter:junit-jupiter:5.4+'
+    testImplementation 'org.mockito:mockito-junit-jupiter:2.17.0'
     testImplementation 'org.springframework.kafka:spring-kafka-test:2.2.7.RELEASE'
     testImplementation "org.apache.kafka:kafka_2.11:${kafkaVersion}"
     testImplementation "org.apache.kafka:kafka_2.11:${kafkaVersion}:test"

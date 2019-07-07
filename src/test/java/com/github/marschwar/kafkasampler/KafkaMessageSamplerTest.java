@@ -1,54 +1,66 @@
 package com.github.marschwar.kafkasampler;
 
 import org.apache.jmeter.samplers.Entry;
-import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.jmeter.samplers.SampleResult;
+import org.apache.kafka.clients.producer.Callback;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.KafkaException;
+import org.apache.kafka.common.TopicPartition;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.kafka.test.EmbeddedKafkaBroker;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.util.Properties;
-import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 
-@ExtendWith(KafkaExtension.class)
+@ExtendWith(MockitoExtension.class)
 class KafkaMessageSamplerTest {
 
-    private EmbeddedKafkaBroker kafkaEmbedded;
+    @InjectMocks
+    KafkaMessageSampler subject;
+
+    @Mock
+    private Producer<String, String> producer;
 
     @Test
-    void sample() {
+    void testFailWithoutTopic() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            subject.setProperty(KafkaClientConfig.BOOTSTRAP_SERVERS, "localhost:9092");
+            subject.setTopic(" ");
+            subject.setKey("foo");
+            subject.setPayload("bar");
 
-        String topic = "foo";
-        KafkaMessageSampler subject = new KafkaMessageSampler();
-        subject.setProperty(KafkaClientConfig.BOOTSTRAP_SERVERS, kafkaEmbedded.getBrokersAsString());
-
-        final Consumer<String, String> consumer = createAndListenToTopic(topic);
-        subject.sample(new Entry());
-
-        final ConsumerRecord<String, String> record = consumer.poll(Duration.of(2, ChronoUnit.SECONDS)).iterator().next();
-        assertThat(record.value()).isEqualTo("value");
+            subject.sample(new Entry());
+        });
     }
 
-    private Consumer<String, String> createAndListenToTopic(String topic) {
-        kafkaEmbedded.addTopics(topic);
+    @Test
+    void testHandleFailureDuringSend() {
 
-        Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaEmbedded.getBrokersAsString());
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, UUID.randomUUID().toString());
-        Consumer<String, String> consumer = new KafkaConsumer<>(props);
+        when(producer.send(any(), any())).thenAnswer(ctx -> {
+            final Callback callback = ctx.getArgument(1);
+            final RecordMetadata meta = new RecordMetadata(new TopicPartition("topic", 1), 0L, 0L, 0L, 0L, 0, 0);
+            callback.onCompletion(meta, new KafkaException("some error"));
+            return CompletableFuture.completedFuture(null);
+        });
 
-        kafkaEmbedded.consumeFromAnEmbeddedTopic(consumer, topic);
+        subject.setProperty(KafkaClientConfig.BOOTSTRAP_SERVERS, "localhost:9092");
+        subject.setTopic("any");
+        subject.setKey("foo");
+        subject.setPayload("bar");
 
-        return consumer;
+        SampleResult result = subject.sample(new Entry());
+
+        assertThat(result.isSuccessful()).isFalse();
+        assertThat(result.getResponseMessage()).isEqualTo("some error");
     }
 }
