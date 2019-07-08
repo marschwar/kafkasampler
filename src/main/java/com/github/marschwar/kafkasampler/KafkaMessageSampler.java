@@ -9,14 +9,8 @@ import org.apache.jmeter.testelement.TestElement;
 import org.apache.jmeter.testelement.property.CollectionProperty;
 import org.apache.jmeter.testelement.property.PropertyIterator;
 import org.apache.kafka.clients.CommonClientConfigs;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.config.SaslConfigs;
-import org.apache.kafka.common.config.SslConfigs;
-import org.apache.kafka.common.serialization.ByteArraySerializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +34,8 @@ public class KafkaMessageSampler extends AbstractSampler {
     private static final String KEY_TOPIC = "topic";
     private static final String KEY_MESSAGE_KEY = "key";
     private static final String KEY_MESSAGE_PAYLOAD = "payload";
+
+    private KafkaProducerBuilder<String, byte[]> producerBuilder = new KafkaProducerBuilderImpl<>();
 
     public KafkaMessageSampler() {
         setProperty(new CollectionProperty("_headers", new ArrayList<>()));
@@ -89,35 +85,19 @@ public class KafkaMessageSampler extends AbstractSampler {
     }
 
     private Producer<String, byte[]> createProducer() {
-        Properties props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, getPropertyAsString(BOOTSTRAP_SERVERS));
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
-        props.put(ProducerConfig.ACKS_CONFIG, "1");
-        props.put(ProducerConfig.RETRIES_CONFIG, "3");
-        props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, getSecurityProtocol());
 
-        final boolean useSsl = getPropertyAsBoolean(USE_SSL, false);
-
-        if (useSsl) {
-            final String keystoreLocation = getPropertyAsString(KEYSTORE_LOCATION, "").trim();
-            if (!keystoreLocation.isEmpty()) {
-                props.put(SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG, keystoreLocation);
-                props.put(SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG, getPropertyAsString(KEYSTORE_PASSWORD));
-            }
-
-            final String truststoreLocation = getPropertyAsString(TRUSTSTORE_LOCATION, "").trim();
-            if (!truststoreLocation.isEmpty()) {
-                props.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, truststoreLocation);
-                props.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, getPropertyAsString(TRUSTSTORE_PASSWORD));
-            }
-            props.put(SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, getPropertyAsString(SSL_ENDPOINT_IDENTIFICATION));
-        }
-
-        props.put(SaslConfigs.SASL_JAAS_CONFIG, getPropertyAsString(SASL_JAAS_CONFIG));
-        props.put(SaslConfigs.SASL_MECHANISM, getPropertyAsString(SASL_MECHANISM));
-
-        return new KafkaProducer<>(props);
+        return producerBuilder
+            .bootstrapServers(getPropertyAsString(BOOTSTRAP_SERVERS))
+            .securityProtocol(getSecurityProtocol())
+            .ssl(getPropertyAsBoolean(USE_SSL, false))
+            .keystoreLocation(getPropertyAsString(KEYSTORE_LOCATION, ""))
+            .keystorePassword(getPropertyAsString(KEYSTORE_PASSWORD))
+            .truststoreLocation(getPropertyAsString(TRUSTSTORE_LOCATION, ""))
+            .truststorePassword(getPropertyAsString(TRUSTSTORE_PASSWORD))
+            .sslIEndpointIdentification(getPropertyAsString(SSL_ENDPOINT_IDENTIFICATION))
+            .saslJaasConfig(getPropertyAsString(SASL_JAAS_CONFIG))
+            .saslMechanism(getPropertyAsString(SASL_MECHANISM))
+            .build();
     }
 
     private String getSecurityProtocol() {
