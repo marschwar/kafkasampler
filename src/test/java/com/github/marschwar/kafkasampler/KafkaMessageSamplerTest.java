@@ -26,13 +26,14 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class KafkaMessageSamplerTest {
+    private static final RecordMetadata ANY_METADATA = new RecordMetadata(new TopicPartition("topic", 1), 0L, 0L, 0L, 0L, 0, 0);
 
     @InjectMocks
     KafkaMessageSampler subject;
 
     @Mock
     private KafkaProducerBuilder producerBuilder;
-    private static final RecordMetadata ANY_METADATA = new RecordMetadata(new TopicPartition("topic", 1), 0L, 0L, 0L, 0L, 0, 0);
+
 
     void setupProducerBuilderMock() {
         when(producerBuilder.bootstrapServers(any())).thenReturn(producerBuilder);

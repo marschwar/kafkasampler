@@ -20,18 +20,16 @@ repositories {
 
 dependencies {
     compileOnly "org.apache.jmeter:ApacheJMeter_core:${jmeterVersion}"
-    compileOnly "org.apache.jmeter:ApacheJMeter_http:${jmeterVersion}"
     implementation "org.apache.kafka:kafka-clients:${kafkaVersion}"
 
-    testCompileOnly "org.apache.jmeter:ApacheJMeter_core:${jmeterVersion}"
-    testCompileOnly "org.apache.jmeter:ApacheJMeter_java:${jmeterVersion}"
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.4+'
+    testImplementation "org.apache.jmeter:ApacheJMeter_core:${jmeterVersion}"
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.4.2'
     testImplementation 'org.mockito:mockito-junit-jupiter:2.17.0'
     testImplementation 'org.springframework.kafka:spring-kafka-test:2.2.7.RELEASE'
     testImplementation "org.apache.kafka:kafka_2.11:${kafkaVersion}"
     testImplementation "org.apache.kafka:kafka_2.11:${kafkaVersion}:test"
-    testImplementation 'org.slf4j:slf4j-simple:1.7+'
-    testImplementation 'org.assertj:assertj-core:3.12+'
+    testImplementation 'org.slf4j:slf4j-simple:1.7.26'
+    testImplementation 'org.assertj:assertj-core:3.12.2'
 }
 
 tasks.build.dependsOn tasks.shadowJar
