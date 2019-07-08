@@ -13,6 +13,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -107,5 +109,28 @@ class KafkaMessageSamplerTest {
         assertThat(result.isSuccessful()).isTrue();
 
         verify(producer).close();
+    }
+
+    @Test
+    void whenNoHeadersAreAdded() {
+        subject.setHeaders(null);
+        assertThat(subject.getHeaders()).isEmpty();
+    }
+
+    @Test
+    void whenASingleHeaderIsAdded() {
+        Header aHeader = new Header("key", "value");
+        subject.setHeaders(Collections.singletonList(aHeader));
+
+        assertThat(subject.getHeaders()).containsExactly(aHeader);
+    }
+
+    @Test
+    void whenMultipleHeadersAreAdded() {
+        Header aHeader = new Header("key", "value");
+        Header anotherHeader = new Header("key2", "value2");
+        subject.setHeaders(Arrays.asList(aHeader, anotherHeader));
+
+        assertThat(subject.getHeaders()).containsExactly(aHeader, anotherHeader);
     }
 }

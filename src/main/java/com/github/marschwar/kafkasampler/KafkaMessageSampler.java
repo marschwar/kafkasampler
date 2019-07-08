@@ -145,7 +145,11 @@ public class KafkaMessageSampler extends AbstractSampler {
     }
 
     public void setHeaders(List<Header> headers) {
-        getHeadersProp().setCollection(headers == null ? new ArrayList<>() : headers);
+        ArrayList<Header> elements = new ArrayList<>();
+        if (headers != null) {
+            elements.addAll(headers);
+        }
+        getHeadersProp().setCollection(elements);
     }
 
     private CollectionProperty getHeadersProp() {
