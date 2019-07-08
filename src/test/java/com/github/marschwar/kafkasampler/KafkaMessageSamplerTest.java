@@ -7,14 +7,11 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.TopicPartition;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.Answer;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -33,6 +30,7 @@ class KafkaMessageSamplerTest {
 
     @Mock
     private KafkaProducerBuilder producerBuilder;
+    private static final RecordMetadata ANY_METADATA = new RecordMetadata(new TopicPartition("topic", 1), 0L, 0L, 0L, 0L, 0, 0);
 
     void setupProducerBuilderMock() {
         when(producerBuilder.bootstrapServers(any())).thenReturn(producerBuilder);
@@ -83,5 +81,31 @@ class KafkaMessageSamplerTest {
 
         assertThat(result.isSuccessful()).isFalse();
         assertThat(result.getResponseMessage()).isEqualTo("some error");
+
+        verify(producer).close();
+    }
+
+    @Test
+    void ensureProducerIsClosedOnSuccess() {
+        setupProducerBuilderMock();
+
+        KafkaProducer producer = mock(KafkaProducer.class);
+        when(producer.send(any(), any())).thenAnswer(ctx -> {
+            final Callback callback = ctx.getArgument(1);
+            callback.onCompletion(ANY_METADATA, null);
+            return CompletableFuture.completedFuture(null);
+        });
+        when(producerBuilder.build()).thenReturn(producer);
+
+        subject.setProperty(KafkaClientConfig.BOOTSTRAP_SERVERS, "localhost:9092");
+        subject.setTopic("any");
+        subject.setKey("foo");
+        subject.setPayload("bar");
+
+        SampleResult result = subject.sample(new Entry());
+
+        assertThat(result.isSuccessful()).isTrue();
+
+        verify(producer).close();
     }
 }
