@@ -13,4 +13,4 @@ Build the extension:
 
 Install the extension into `$JMETER_HOME/lib/ext`:
 
-    cp target/kafkasampler-x.y.z.jar $JMETER_HOME/lib/ext
+    cp build/libs/kafkasampler-x.y.z.jar $JMETER_HOME/lib/ext
