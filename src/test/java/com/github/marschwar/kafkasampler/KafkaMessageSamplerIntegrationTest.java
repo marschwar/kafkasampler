@@ -8,8 +8,10 @@ import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 
+import java.nio.charset.Charset;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -33,6 +35,7 @@ class KafkaMessageSamplerIntegrationTest {
         subject.setTopic(topic);
         subject.setKey(messageKey);
         subject.setPayload(payload);
+        subject.setHeaders(Collections.singletonList(new Header("key", "value")));
 
         final Consumer<String, String> consumer = createAndListenToTopic(topic);
         subject.sample(new Entry());
@@ -40,6 +43,10 @@ class KafkaMessageSamplerIntegrationTest {
         final ConsumerRecord<String, String> record = consumer.poll(Duration.of(2, ChronoUnit.SECONDS)).iterator().next();
         assertThat(record.key()).isEqualTo(messageKey);
         assertThat(record.value()).isEqualTo(payload);
+        assertThat(record.headers()).hasSize(1);
+        org.apache.kafka.common.header.Header actualHeader = record.headers().toArray()[0];
+        assertThat(actualHeader.key()).isEqualTo("key");
+        assertThat(new String(actualHeader.value(), Charset.forName("UTF-8"))).isEqualTo("value");
     }
 
     @Test
