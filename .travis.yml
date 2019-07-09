@@ -5,3 +5,8 @@ jdk:
   - openjdk9
   - openjdk10
   - openjdk11
+
+sccript:
+  - ./gradlew assemble
+  - ./gradlew check --info
+
