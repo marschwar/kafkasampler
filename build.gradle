@@ -12,7 +12,7 @@ plugins {
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
-version = '0.0.1'
+version = '0.2.3'
 
 repositories {
     mavenCentral()
@@ -28,7 +28,6 @@ dependencies {
     testImplementation 'org.springframework.kafka:spring-kafka-test:2.2.7.RELEASE'
     testImplementation "org.apache.kafka:kafka_2.11:${kafkaVersion}"
     testImplementation "org.apache.kafka:kafka_2.11:${kafkaVersion}:test"
-    testImplementation 'org.slf4j:slf4j-simple:1.7.26'
     testImplementation 'org.assertj:assertj-core:3.12.2'
 }
 
@@ -39,8 +38,4 @@ test {
     testLogging {
         events "passed", "skipped", "failed"
     }
-}
-
-shadowJar {
-    version = null
 }
