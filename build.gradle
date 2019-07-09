@@ -24,7 +24,7 @@ dependencies {
 
     testImplementation "org.apache.jmeter:ApacheJMeter_core:${jmeterVersion}"
     testImplementation 'org.junit.jupiter:junit-jupiter:5.4.2'
-    testImplementation 'org.mockito:mockito-junit-jupiter:2.17.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:2.28.2'
     testImplementation 'org.springframework.kafka:spring-kafka-test:2.2.7.RELEASE'
     testImplementation "org.apache.kafka:kafka_2.11:${kafkaVersion}"
     testImplementation "org.apache.kafka:kafka_2.11:${kafkaVersion}:test"
