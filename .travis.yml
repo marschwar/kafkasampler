@@ -12,6 +12,7 @@ deploy:
   api_key:
     secure: adDvkY2CpqoX6O4g+dxV51N7/g3MVD8qk845pEDazHN1UhmMi+KfKQit1WuOHmKlW8b9/QHCBoBafP7sohKU0yXSqE0XBIY9n4cmCRFzheCIBgjKI3/lch16kMcRgq53zSKsWQv/iqHSOKLLKMKBSUlsAJBBSaaI2b9HtVO3p9Eyceh1N24MWoZgLvildf9pvDImDAdnN5Ahl3KhJaIFfbUffK9E7WXSOfhKESZJfRpu+sdrCswLx3KBVkwka0kDEUFGrhZDYp3lCsWUVoXU712JfFQ88gSTkRhARbSWQZLYQO3/o8Q+mFj4w8HiknPRxGPr74EKqvO7fKl8QMssRMSyaLXkSgO78uWSMfFisgtc4idmLsb4zsC5/6IKJ16XMBocnd/m7ZBTNmWRWArHd6HamroVFsCUVwlDy+/ZRUwaegyWIFoH7x1tRp3EY4vOHmNAIH9QfEIskU8IPD4GZxhb+yaR+C0qtIHkay4xhC1+VgLUhtdWVWzMkpP5T1/ql80P+sc3tgzOuBwp4Dp03GNKyDpjzE6+1zCjWozBHEcqHM8nebPz1rqPN1A99JDKZL47hBDn0Ht1eHoJ19OFAh7mtAhvx3AKXGGBQbxitEsufIei5CY+vxgBneo2FF43RyB+EtLCksTw8KK/QEZXVH+m2/6yvrzLaIwWtaTn31M=
   file: "./build/libs/kafkasampler-all.jar"
+  skip_cleanup: true
   on:
     tags: true
     repo: marschwar/kafkasampler
