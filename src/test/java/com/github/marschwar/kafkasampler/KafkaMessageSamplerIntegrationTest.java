@@ -75,7 +75,7 @@ class KafkaMessageSamplerIntegrationTest {
         ConsumerRecords<String, String> records;
         int messageCount = 0;
         do {
-            records = consumer.poll(Duration.of(2, ChronoUnit.SECONDS));
+            records = consumer.poll(Duration.of(5, ChronoUnit.SECONDS));
             messageCount += records.count();
         } while (records.count() > 0);
 
