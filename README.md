@@ -1,5 +1,7 @@
 # kafkasampler - Kafka JMeter Extension
 
+[![Build Status](https://travis-ci.com/marschwar/kafkasampler.svg?branch=master)](https://travis-ci.com/marschwar/kafkasampler)
+
 This extension provides two components:
 
 * Kafka Producer Sampler: sends messages to Kafka
