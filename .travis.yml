@@ -1,9 +1,9 @@
 language: java
 jdk:
-- openjdk12
+  - openjdk12
 script:
-- "./gradlew assemble"
-- "./gradlew build --info"
+  - "./gradlew assemble"
+  - "./gradlew build --info"
 deploy:
   provider: releases
   api_key:

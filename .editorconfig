@@ -9,8 +9,11 @@ insert_final_newline = true
 [*.bat]
 end_of_line = crlf
 
-[*.{xml}]
+[*.xml]
 indent_size = 2
 
-[*.{gradle}]
+[*.gradle]
+indent_size = 2
+
+[*.{yml, yaml}]
 indent_size = 2
