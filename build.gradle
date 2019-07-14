@@ -1,13 +1,13 @@
 buildscript {
-    ext {
-        jmeterVersion = '5.1.1'
-        kafkaVersion = '2.1.1'
-    }
+  ext {
+    jmeterVersion = '5.1.1'
+    kafkaVersion = '2.1.1'
+  }
 }
 
 plugins {
-    id 'java-library'
-    id "com.github.johnrengelman.shadow" version "5.0.0"
+  id 'java-library'
+  id "com.github.johnrengelman.shadow" version "5.0.0"
 }
 
 sourceCompatibility = '1.8'
@@ -15,27 +15,28 @@ targetCompatibility = '1.8'
 version = '0.2.3'
 
 repositories {
-    mavenCentral()
+  mavenCentral()
 }
 
 dependencies {
-    compileOnly "org.apache.jmeter:ApacheJMeter_core:${jmeterVersion}"
-    implementation "org.apache.kafka:kafka-clients:${kafkaVersion}"
+  compileOnly "org.apache.jmeter:ApacheJMeter_core:${jmeterVersion}"
+  implementation "org.apache.kafka:kafka-clients:${kafkaVersion}"
 
-    testImplementation "org.apache.jmeter:ApacheJMeter_core:${jmeterVersion}"
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.4.2'
-    testImplementation 'org.mockito:mockito-junit-jupiter:2.28.2'
-    testImplementation 'org.springframework.kafka:spring-kafka-test:2.2.7.RELEASE'
-    testImplementation "org.apache.kafka:kafka_2.11:${kafkaVersion}"
-    testImplementation "org.apache.kafka:kafka_2.11:${kafkaVersion}:test"
-    testImplementation 'org.assertj:assertj-core:3.12.2'
+  testImplementation "org.apache.jmeter:ApacheJMeter_core:${jmeterVersion}"
+  testImplementation 'org.junit.jupiter:junit-jupiter:5.4.2'
+  testImplementation 'org.mockito:mockito-junit-jupiter:2.28.2'
+  testImplementation 'org.assertj:assertj-core:3.12.2'
+
+  testImplementation('org.springframework.kafka:spring-kafka-test:2.2.7.RELEASE')
+  testImplementation "org.apache.kafka:kafka_2.11:${kafkaVersion}"
+  testImplementation "org.apache.kafka:kafka_2.11:${kafkaVersion}:test"
 }
 
 tasks.build.dependsOn tasks.shadowJar
 
 test {
-    useJUnitPlatform()
-    testLogging {
-        events "passed", "skipped", "failed"
-    }
+  useJUnitPlatform()
+  testLogging {
+    events "passed", "skipped", "failed"
+  }
 }
