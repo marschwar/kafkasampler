@@ -34,6 +34,7 @@ public class KafkaMessageSampler extends AbstractSampler {
     private static final String KEY_TOPIC = "topic";
     private static final String KEY_MESSAGE_KEY = "key";
     private static final String KEY_MESSAGE_PAYLOAD = "payload";
+    static final Charset CHARSET = Charset.forName("UTF-8");
 
     private KafkaProducerBuilder<String, byte[]> producerBuilder = new KafkaProducerBuilderImpl<>();
 
@@ -48,15 +49,14 @@ public class KafkaMessageSampler extends AbstractSampler {
         if (StringUtils.isBlank(topic)) {
             throw new IllegalArgumentException("topic must be set.");
         }
-        final Charset UTF8 = Charset.forName("UTF-8");
-        ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, getKey(), getPayload().getBytes(UTF8));
-        getHeaders().forEach(header -> record.headers().add(header.key, header.value.getBytes(UTF8)));
+        ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, getKey(), getPayload().getBytes(CHARSET));
+        getHeaders().forEach(header -> record.headers().add(header.key, header.value.getBytes(CHARSET)));
 
         final SampleResult res = new SampleResult();
         res.setSampleLabel("Kafka Message");
         res.setRequestHeaders(getHeadersAsDisplayString());
         res.setSamplerData(getPayload());
-        res.setDataEncoding(UTF8.displayName());
+        res.setDataEncoding(CHARSET.displayName());
 
         try (Producer<String, byte[]> producer = createProducer()) {
             res.sampleStart();
@@ -139,7 +139,10 @@ public class KafkaMessageSampler extends AbstractSampler {
         final List<Header> headers = new ArrayList<>();
 
         while (it.hasNext()) {
-            headers.add(Header.fromString(it.next().getStringValue()));
+            final Header header = Header.fromString(it.next().getStringValue());
+            if (header != null) {
+                headers.add(header);
+            }
         }
         return headers;
     }

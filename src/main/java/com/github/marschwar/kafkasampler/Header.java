@@ -1,5 +1,7 @@
 package com.github.marschwar.kafkasampler;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Objects;
 
 class Header {
@@ -43,6 +45,10 @@ class Header {
         if (idx >= 0) {
             header.key = s.substring(0, idx);
             header.value = s.substring(idx + SEPARATOR.length());
+        }
+
+        if (StringUtils.isAllBlank(header.key, header.value)) {
+            return null;
         }
 
         return header;
