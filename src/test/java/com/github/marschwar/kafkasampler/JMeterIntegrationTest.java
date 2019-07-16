@@ -15,11 +15,14 @@ import org.springframework.kafka.test.EmbeddedKafkaBroker;
 
 import java.io.File;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
 import static com.github.marschwar.kafkasampler.KafkaMessageSampler.CHARSET;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 @ExtendWith(KafkaExtension.class)
 class JMeterIntegrationTest {
@@ -57,20 +60,46 @@ class JMeterIntegrationTest {
         jmeter.run();
     }
 
-    private ConsumerRecords<String, String> poll() {
-        return consumer.poll(Duration.ofSeconds(10));
-    }
-
     @Test
     public void singleMessageWithHeaders() {
-        ConsumerRecords<String, String> records = poll();
-
-        assertThat(records.count()).isOne();
-        ConsumerRecord<String, String> firstMessage = records.iterator().next();
+        ConsumerRecord<String, String> firstMessage = receiveNumberOfRecordsOrFail(1).get(0);
+        ;
         assertThat(firstMessage.key()).isEqualTo("key");
         assertThat(firstMessage.headers()).isNotEmpty();
         assertThat(headerValueAsString(firstMessage.headers().lastHeader("Header1"))).isEqualTo("foo");
         assertThat(headerValueAsString(firstMessage.headers().lastHeader("Header2"))).isEqualTo("bar");
+    }
+
+    @Test
+    public void fiveMessagesFromSameThreadGroup() {
+
+        final int expectedMessageCount = 5;
+
+        receiveNumberOfRecordsOrFail(expectedMessageCount);
+    }
+
+    @Test
+    public void fiveMessagesFromDifferentThreadGroups() {
+
+        final int expectedMessageCount = 5;
+
+        receiveNumberOfRecordsOrFail(expectedMessageCount);
+    }
+
+    private List<ConsumerRecord<String, String>> receiveNumberOfRecordsOrFail(int expectedMessageCount) {
+        final List<ConsumerRecord<String, String>> allRecords = new ArrayList<>(expectedMessageCount);
+        while (allRecords.size() < expectedMessageCount) {
+            ConsumerRecords<String, String> records = poll();
+            if (records.isEmpty()) {
+                fail("No more message returned by polling. Received: " + allRecords.size());
+            }
+            records.forEach(record -> allRecords.add(record));
+        }
+        return allRecords;
+    }
+
+    private ConsumerRecords<String, String> poll() {
+        return consumer.poll(Duration.ofSeconds(5));
     }
 
     private Consumer<String, String> createConsumerForTopic(String topic) {
