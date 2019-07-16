@@ -14,6 +14,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +29,8 @@ import static org.assertj.core.api.Assertions.fail;
 @ExtendWith(KafkaExtension.class)
 class JMeterIntegrationTest {
 
+    private static final String FAKE_JMETER_DIR = Paths.get("./fake-jmeter").toAbsolutePath().toString();
+
     private EmbeddedKafkaBroker kafkaEmbedded;
 
     private Consumer<String, String> consumer;
@@ -34,8 +38,9 @@ class JMeterIntegrationTest {
     @BeforeAll
     public static void initJMeter() throws Exception {
 
-        JMeterUtils.setJMeterHome("/home/markus/git/kafkasampler/fake-jmeter");
-        JMeterUtils.loadJMeterProperties("/home/markus/git/kafkasampler/fake-jmeter/bin/jmeter.properties");
+        JMeterUtils.setJMeterHome(FAKE_JMETER_DIR.toString());
+        final Path propsPath = Paths.get(FAKE_JMETER_DIR, "bin", "jmeter.properties");
+        JMeterUtils.loadJMeterProperties(propsPath.toString());
 
         SaveService.loadProperties();
     }
