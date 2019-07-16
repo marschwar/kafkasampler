@@ -9,9 +9,10 @@ import org.apache.kafka.common.config.SslConfigs;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
+import java.io.Serializable;
 import java.util.Properties;
 
-public class KafkaProducerBuilderImpl<K, V> implements KafkaProducerBuilder<K, V> {
+public class KafkaProducerBuilderImpl<K, V> implements KafkaProducerBuilder<K, V>, Serializable {
 
     private String bootstrapServers;
     private String securityProtocol;
@@ -27,7 +28,7 @@ public class KafkaProducerBuilderImpl<K, V> implements KafkaProducerBuilder<K, V
     @Override
     public KafkaProducer<K, V> build() {
         final Properties props = createProps();
-        return new KafkaProducer<K, V>(props);
+        return new KafkaProducer<>(props);
     }
 
     @Override
