@@ -7,4 +7,7 @@
 **/*.class
 
 jmeter.log
+!fake-jmeter/lib/ext/ApacheJMeter_functions-5.1.1.jar
+
 .idea/
+out/
