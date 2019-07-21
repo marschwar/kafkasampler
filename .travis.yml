@@ -6,7 +6,6 @@ jdk:
   - openjdk12
 
 script:
-  - "./gradlew assemble"
   - "./gradlew check --info"
 
 jobs:
