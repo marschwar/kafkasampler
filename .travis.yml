@@ -4,9 +4,13 @@ jdk:
   - openjdk10
   - openjdk11
   - openjdk12
+
+script:
+  - "./gradlew assemble"
+  - "./gradlew build --info"
+
 jobs:
   include:
-    - script: "./gradlew build --info"
     - stage: GitHub Release
       script: echo "Deploying to GitHub releases ..."
       deploy:
@@ -20,6 +24,7 @@ jobs:
         on:
           tags: true
           repo: marschwar/kafkasampler
+
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
