@@ -7,15 +7,15 @@ jdk:
 
 script:
   - "./gradlew assemble"
-  - "./gradlew build --info"
+  - "./gradlew check --info"
 
 jobs:
   include:
     - stage: GitHub Release
-      script: echo "Deploying to GitHub releases ..."
+      jdk: openjdk12
+      script: "./gradlew build -xtest"
       deploy:
         provider: releases
-        jdk: openjdk12
         api_key:
           secure: hwys6NpE4UAJVJJ1FS0ISLNlEJ/5UCwNxaaD45KCjnt9hEuihEwGYndNGiyDr3f0ZHxgwo3l1T2c1TB3msn85MJrSHjsYhJW1dZPAdUAtqXHW7eTt4MdRkxgg5rt4/FJYCXUeU42HzPZl3yoR4d+yreQfve0En+MIJHyUQzVJMzJQrhYlgkKq8kiRTSIjkMY/bCtdgajsMafVBP+GZzGxLNW2eOBV5J2MTZKMu565H3VlNAdyi8pyMgrun20LCK/cnEgAjFxfRrpodM4J9WTOJofNF7SwcMQgup81DxboqMTbwltsUc+DuCnYcazBxSjkUhFh6lGsGSJIDNmh3s+RouQ5V/Dj1zsZpkCmrjbJAMFQRFUOp1IwdLek+fgSGMtrK0UEAmKDEtQRX0nzM8qHQtaFjbRIoB253qOvwBYfcrKKSbmTo7iDcX02NV4UahVSxrLJ15IEfgnOnbMG6D6lnmQH0av3uV+WILs17LNpkAfdEGGin6osdAmoWTg81Kakt/sE6SivtafKCOiVtUMQ2MsRBNFnACvP6dTBtOD7rk4xyetIuw6fml3XWDruQ9l7ckULElMcNeOupMcAmHOaNwqdJVvmI8kms3/b9vKFcRUmPBZRVRBYKdRpA+vIHj+vh1hQlniYV2N5HcHmq9Pe2AMYMd1go85iGcApBJDrhA=
         file_glob: true
