@@ -1,21 +1,9 @@
 language: java
-matrix:
-  include:
-    - os: linux
-      jdk: openjdk10
-    - os: linux
-      jdk: openjdk11
-    - os: linux
-      jdk: openjdk12
-    # JDK 10 - see https://docs.travis-ci.com/user/reference/osx/#jdk-and-macos
-    - os: osx
-      osx_image: xcode9.4
-    # JDK 11
-    - os: osx
-      osx_image: xcode10.1
-    # JDK 12
-    - os: osx
-      osx_image: xcode10.2
+jdk:
+  - openjdk8
+  - openjdk10
+  - openjdk11
+  - openjdk12
 jobs:
   include:
     - script: "./gradlew build --info"
@@ -32,3 +20,10 @@ jobs:
         on:
           tags: true
           repo: marschwar/kafkasampler
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
