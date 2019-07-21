@@ -98,7 +98,7 @@ class JMeterIntegrationTest {
             if (records.isEmpty()) {
                 fail("No more message returned by polling. Received: " + allRecords.size());
             }
-            records.forEach(record -> allRecords.add(record));
+            records.forEach(allRecords::add);
         }
         return allRecords;
     }

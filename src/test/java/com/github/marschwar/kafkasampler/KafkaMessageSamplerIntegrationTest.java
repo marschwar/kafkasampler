@@ -1,6 +1,7 @@
 package com.github.marschwar.kafkasampler;
 
 import org.apache.jmeter.samplers.Entry;
+import org.apache.jmeter.samplers.SampleResult;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.Test;
@@ -10,12 +11,11 @@ import org.springframework.kafka.test.EmbeddedKafkaBroker;
 
 import java.nio.charset.Charset;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.util.Collections;
-import java.util.Properties;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 
 @ExtendWith(KafkaExtension.class)
@@ -40,7 +40,9 @@ class KafkaMessageSamplerIntegrationTest {
         final Consumer<String, String> consumer = createAndListenToTopic(topic);
         subject.sample(new Entry());
 
-        final ConsumerRecord<String, String> record = consumer.poll(Duration.of(2, ChronoUnit.SECONDS)).iterator().next();
+        List<ConsumerRecord<String, String>> records = receiveNumberOfRecordsOrFail(consumer, 1);
+        ConsumerRecord<String, String> record = records.get(0);
+
         assertThat(record.key()).isEqualTo(messageKey);
         assertThat(record.value()).isEqualTo(payload);
         assertThat(record.headers()).hasSize(1);
@@ -59,6 +61,7 @@ class KafkaMessageSamplerIntegrationTest {
         final Consumer<String, String> consumer = createAndListenToTopic(topic);
 
         final int MESSAGE_COUNT = 10;
+        final List<SampleResult> results = new ArrayList<>();
         for (int i = 0; i < MESSAGE_COUNT; i++) {
             String messageKey = "messageKey" + i;
             String payload = "some message" + i;
@@ -69,17 +72,29 @@ class KafkaMessageSamplerIntegrationTest {
             subject.setKey(messageKey);
             subject.setPayload(payload);
 
-            subject.sample(new Entry());
+            results.add(subject.sample(new Entry()));
         }
 
-        ConsumerRecords<String, String> records;
-        int messageCount = 0;
-        do {
-            records = consumer.poll(Duration.of(5, ChronoUnit.SECONDS));
-            messageCount += records.count();
-        } while (records.count() > 0);
+        assertThat(results).hasSize(MESSAGE_COUNT);
+        final List<SampleResult> withErrors = results
+            .stream()
+            .filter(r -> !r.isSuccessful())
+            .collect(Collectors.toList());
+        assertThat(withErrors).isEmpty();
 
-        assertThat(messageCount).isEqualTo(MESSAGE_COUNT);
+        receiveNumberOfRecordsOrFail(consumer, 10);
+    }
+
+    private List<ConsumerRecord<String, String>> receiveNumberOfRecordsOrFail(Consumer<String, String> consumer, int expectedMessageCount) {
+        final List<ConsumerRecord<String, String>> allRecords = new ArrayList<>(expectedMessageCount);
+        while (allRecords.size() < expectedMessageCount) {
+            ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(5));
+            if (records.isEmpty()) {
+                fail("No more message returned by polling. Received: " + allRecords.size());
+            }
+            records.forEach(allRecords::add);
+        }
+        return allRecords;
     }
 
     private Consumer<String, String> createAndListenToTopic(String topic) {
